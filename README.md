@@ -17,13 +17,13 @@
 
 ### 🏠 Landing & Identity
 <p align="center">
-  <img src="./screenshots/about.png" width="800" alt="About Page">
+  <img src="./screenshot/about.png" width="800" alt="About Page">
 </p>
 
 ### 👤 Authentication & Security
 <p align="center">
-  <img src="./screenshots/login.png" width="45%" alt="Dual Login System">
-  <img src="./screenshots/register.png" width="45%" alt="User Registration">
+  <img src="./screenshot/login.png" width="45%" alt="Dual Login System">
+  <img src="./screenshot/register.png" width="45%" alt="User Registration">
 </p>
 
 ### 🛒 User Experience & Dashboard
@@ -33,7 +33,7 @@
 
 ### 📄 Professional API Documentation
 <p align="center">
-  <img src="./screenshot/swagger-ui-index-html.png width="800" alt="Swagger OpenAPI Docs">
+  <img src="./screenshot/swagger-ui-index-html.png"  width="800" alt="Swagger OpenAPI Docs">
 </p>
 
 ---
