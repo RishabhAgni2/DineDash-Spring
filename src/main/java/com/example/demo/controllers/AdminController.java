@@ -35,81 +35,88 @@ public class AdminController {
 	@Autowired
 	private OrderServices orderServices;
 
-	private String email;
-	private User user;
+// Removed instance variables email and user to prevent data leakage in singleton controller
+
 	@PostMapping("/adminLogin")
 	@Operation(summary = "Admin login authentication", description = "Validates admin credentials and redirects to the services dashboard")
-	public String  getAllData(  @ModelAttribute("adminLogin") AdminLogin login, Model model)
-	{
-		String email=login.getEmail();
-		String password=login.getPassword();
-		if(adminServices.validateAdminCredentials(email, password))
-		{
+	public String getAllData(@ModelAttribute("adminLogin") AdminLogin login, Model model, jakarta.servlet.http.HttpSession session) {
+		String email = login.getEmail();
+		String password = login.getPassword();
+		if (adminServices.validateAdminCredentials(email, password)) {
+			session.setAttribute("loggedInAdmin", email);
 			return "redirect:/admin/services";
-		}
-		else {
+		} else {
 			model.addAttribute("error", "Invalid email or password");
 			return "Login";
 		}
-
 	}
 
 	@PostMapping("/userLogin")
-	@Operation(summary = "User login authentication", description = "Validates user credentials and opens the product ordering page")
-	public String userLogin( @ModelAttribute("userLogin") UserLogin login,Model model)
-	{
-
-		email=login.getUserEmail();
-		String password=login.getUserPassword();
-		if(services.validateLoginCredentials(email, password))
-		{
-			user = this.services.getUserByEmail(email);
-			List<Orders> orders = this.orderServices.getOrdersForUser(user);
-			model.addAttribute("orders", orders);
-			model.addAttribute("name", user.getUname());
-			return "BuyProduct";
-		}
-		else
-		{
+	@Operation(summary = "User login authentication", description = "Validates user credentials and redirects to the dashboard")
+	public String userLogin(@ModelAttribute("userLogin") UserLogin login, Model model, jakarta.servlet.http.HttpSession session) {
+		String email = login.getUserEmail();
+		String password = login.getUserPassword();
+		if (services.validateLoginCredentials(email, password)) {
+			User loggedInUser = this.services.getUserByEmail(email);
+			session.setAttribute("loggedInUser", loggedInUser);
+			return "redirect:/dashboard";
+		} else {
 			model.addAttribute("error2", "Invalid email or password");
 			return "Login";
 		}
+	}
 
+	@GetMapping("/dashboard")
+	@Operation(summary = "User Dashboard", description = "Displays the product ordering page for logged-in users")
+	public String dashboard(Model model, jakarta.servlet.http.HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/userLogin";
+		}
+		List<Orders> orders = this.orderServices.getOrdersForUser(loggedInUser);
+		model.addAttribute("orders", orders);
+		model.addAttribute("name", loggedInUser.getUname());
+		return "BuyProduct";
+	}
+
+	@GetMapping("/logout")
+	@Operation(summary = "Logout", description = "Invalidates the session and redirects to home")
+	public String logout(jakarta.servlet.http.HttpSession session) {
+		session.invalidate();
+		return "redirect:/home";
 	}
 	@PostMapping("/product/search")
 	@Operation(summary = "Search for a product", description = "Finds a specific food item by name and returns its details")
-	public String seachHandler(@RequestParam("productName") String name,Model model)
-	{
+	public String seachHandler(@RequestParam("productName") String name, Model model, jakarta.servlet.http.HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/userLogin";
+		}
 
-		Product product=this.productServices.getProductByName(name);
-		if(product==null)
-		{
+		Product product = this.productServices.getProductByName(name);
+		List<Orders> orders = this.orderServices.getOrdersForUser(loggedInUser);
+		model.addAttribute("orders", orders);
+		model.addAttribute("name", loggedInUser.getUname());
+
+		if (product == null) {
 			model.addAttribute("message", "SORRY...! Product '" + name + "' Unavailable");
 			model.addAttribute("product", null);
-			if (user != null) {
-				List<Orders> orders = this.orderServices.getOrdersForUser(user);
-				model.addAttribute("orders", orders);
-			}
-			return "BuyProduct";
+		} else {
+			model.addAttribute("product", product);
 		}
-		
-		if (user != null) {
-			List<Orders> orders = this.orderServices.getOrdersForUser(user);
-			model.addAttribute("orders", orders);
-		}
-		model.addAttribute("product", product);
 		return "BuyProduct";
-
-	} 
+	}
 	@GetMapping("/admin/services")
 	@Operation(summary = "Admin Services Dashboard", description = "Displays the overview of all users, admins, products, and orders")
-	public String returnBack(Model model)
-	{
-		List<User> users= this.services.getAllUser();
-		List<Admin>admins=this.adminServices.getAll(); 
-		List<Product>products=this.productServices.getAllProducts();
+	public String returnBack(Model model, jakarta.servlet.http.HttpSession session) {
+		if (session.getAttribute("loggedInAdmin") == null) {
+			return "redirect:/login";
+		}
+		List<User> users = this.services.getAllUser();
+		List<Admin> admins = this.adminServices.getAll();
+		List<Product> products = this.productServices.getAllProducts();
 		List<Orders> orders = this.orderServices.getOrders();
-		model.addAttribute("users",users);
+		model.addAttribute("users", users);
 		model.addAttribute("admins", admins);
 		model.addAttribute("products", products);
 		model.addAttribute("orders", orders);
@@ -188,25 +195,25 @@ public class AdminController {
 
 	@PostMapping("/product/order")
 	@Operation(summary = "Process food order", description = "Calculates total amount and saves the order in the system")
-	public String orderHandler(@ModelAttribute() Orders order,Model model)
-	{
-		double  totalAmount = Logic.countTotal(order.getoPrice(),order.getoQuantity());
+	public String orderHandler(@ModelAttribute() Orders order, Model model, jakarta.servlet.http.HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/userLogin";
+		}
+
+		double totalAmount = Logic.countTotal(order.getoPrice(), order.getoQuantity());
 		order.setTotalAmmout(totalAmount);
-		order.setUser(user);
-		Date d=new Date();
-		order.setOrderDate(d);
+		order.setUser(loggedInUser);
+		order.setOrderDate(new Date());
 		this.orderServices.saveOrder(order);
-		model.addAttribute("amount",totalAmount);
+		model.addAttribute("amount", totalAmount);
 		return "Order_success";
 	}
 
 	@GetMapping("/product/back")
 	@Operation(summary = "Return to shop", description = "Navigates back to the product catalog after viewing orders")
-	public String back(Model model)
-	{
-		List<Orders> orders = this.orderServices.getOrdersForUser(user);
-		model.addAttribute("orders", orders);
-		return "BuyProduct";
+	public String back(jakarta.servlet.http.HttpSession session) {
+		return "redirect:/dashboard";
 	}
 
 }

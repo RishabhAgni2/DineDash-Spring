@@ -66,8 +66,11 @@ public class HomeController
 
 	@GetMapping("/product/search")
 	@Operation(summary = "Search Redirect", description = "Redirects to the dashboard if search is accessed directly via GET")
-	public String searchRedirect()
+	public String searchRedirect(jakarta.servlet.http.HttpSession session)
 	{
+		if (session.getAttribute("loggedInUser") != null) {
+			return "redirect:/dashboard";
+		}
 		return "redirect:/userLogin";
 	}
 

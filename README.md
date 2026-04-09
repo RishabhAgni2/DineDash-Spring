@@ -31,6 +31,11 @@
   <img src="./screenshot/userLogin.png" width="800" alt="User Personalized Dashboard">
 </p>
 
+### 🛡️ Admin Management Console
+<p align="center">
+  <img src="./screenshot/admin-services.png" width="800" alt="Admin Dashboard Overview">
+</p>
+
 ### 📄 Professional API Documentation
 <p align="center">
   <img src="./screenshot/swagger-ui-index-html.png"  width="800" alt="Swagger OpenAPI Docs">
