@@ -20,8 +20,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/home", "/login", "/register", "/adminLogin", "/userLogin", "/products", "/location", "/about").permitAll()
+                .requestMatchers("/css/**", "/JavaScript/**", "/Images/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .anyRequest().permitAll() // Temporarily allowing all for testing, adjust as needed
+                .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .defaultSuccessUrl("/oauth2/success", true)
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl("/home")
+                .permitAll()
             );
         return http.build();
     }

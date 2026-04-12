@@ -59,6 +59,17 @@
 					</div>
 					<p th:if="${error2}" th:text="${error2}" style="color: var(--primary); font-size: 0.875rem; margin-bottom: 16px; text-align: center;"></p>
 					<button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+
+					<div style="margin: 20px 0; display: flex; align-items: center; color: var(--on-surface-variant); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+						<div style="flex: 1; height: 1px; background: var(--surface-variant);"></div>
+						<span style="padding: 0 12px;">Or continue with</span>
+						<div style="flex: 1; height: 1px; background: var(--surface-variant);"></div>
+					</div>
+
+					<a th:href="@{/oauth2/authorization/google}" class="btn" style="width: 100%; background: #ffffff; color: #1f1f1f; border: 1px solid #d1d1d1; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; transition: all 0.2s ease;">
+						<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="18" alt="Google Logo">
+						Google
+					</a>
 				</form>
 				<p style="margin-top: 24px; text-align: center; font-size: 0.875rem; color: var(--on-surface-variant);">
 					Don't have an account? <a th:href="@{/register}" style="color: var(--primary); font-weight: 700; text-decoration: none;">Create one now</a>

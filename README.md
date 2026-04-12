@@ -56,6 +56,7 @@
 - **🛡️ Secure Gateway**: Role-based access control (RBAC) ensuring dedicated environments for Admins and Customers.
 - **🔍 Smart Search**: Case-insensitive, partial-match product discovery powered by optimized JPA queries.
 - **📦 Inventory Suite**: Comprehensive management for food categories (Biryani, North Indian, Chinese, Desserts).
+- **🔑 Social Authentication**: Integrated **Google OAuth2** for seamless signup and login experience.
 - **📄 Interactive Documentation**: Full OpenAPI/Swagger integration allowing for direct API testing and exploration.
 - **📊 Real-time Order Tracking**: Personalized order history and status tracking for registered users.
 
@@ -165,7 +166,20 @@ docker-compose up -d
    spring.datasource.username=YOUR_USERNAME
    spring.datasource.password=YOUR_PASSWORD
    ```
-3. **Build & Execute**
+
+3. **Configure Google OAuth2** (Optional but Recommended)
+   To enable and use Google Login:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/).
+   - Create a new project and navigate to **APIs & Services > Credentials**.
+   - Create an **OAuth 2.0 Client ID**.
+   - Add `http://localhost:8080/login/oauth2/code/google` to the **Authorized redirect URIs**.
+   - Update `src/main/resources/application.properties` with your credentials:
+     ```properties
+     spring.security.oauth2.client.registration.google.client-id=YOUR_CLIENT_ID
+     spring.security.oauth2.client.registration.google.client-secret=YOUR_CLIENT_SECRET
+     ```
+
+4. **Build & Execute**
    ```bash
    ./mvnw clean install
    ./mvnw spring-boot:run
