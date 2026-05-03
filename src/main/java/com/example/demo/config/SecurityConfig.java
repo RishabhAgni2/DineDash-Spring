@@ -31,7 +31,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/home", "/login", "/register", "/adminLogin", "/userLogin", "/products", "/location", "/about").permitAll()
+                .requestMatchers("/", "/home", "/login", "/register", "/adminLogin", "/userLogin", "/products", "/location", "/about", "/api/health").permitAll()
                 .requestMatchers("/css/**", "/JavaScript/**", "/Images/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/h2-console/**").permitAll()
                 .requestMatchers("/dashboard", "/product/search", "/product/order", "/product/back").hasAnyRole("USER", "ADMIN")

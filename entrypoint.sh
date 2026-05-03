@@ -2,8 +2,8 @@
 set -eu
 
 if [ -n "${DATABASE_URL:-}" ] && [ -z "${DB_HOST:-}" ]; then
-  DB_HOST="$(printf '%s' "$DATABASE_URL" | sed -E 's#^postgresql://.*@([^:/]+)(:([0-9]+))?/.*#\1#')"
-  DB_PORT="$(printf '%s' "$DATABASE_URL" | sed -E 's#^postgresql://.*@[^:/]+:([0-9]+)/.*#\1#')"
+  DB_HOST="$(printf '%s' "$DATABASE_URL" | sed -E 's#^postgres(ql)?://.*@([^:/]+)(:([0-9]+))?/.*#\2#')"
+  DB_PORT="$(printf '%s' "$DATABASE_URL" | sed -E 's#^postgres(ql)?://.*@[^:/]+:([0-9]+)/.*#\2#')"
 
   if [ "$DB_PORT" = "$DATABASE_URL" ]; then
     DB_PORT=5432
