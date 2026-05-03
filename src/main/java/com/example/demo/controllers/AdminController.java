@@ -1,14 +1,17 @@
 package com.example.demo.controllers;
 
-import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +22,6 @@ import com.example.demo.count.*;
 import com.example.demo.entities.*;
 import com.example.demo.loginCredentials.*;
 import com.example.demo.services.*;
-import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -39,11 +41,12 @@ public class AdminController {
 
 	@PostMapping("/adminLogin")
 	@Operation(summary = "Admin login authentication", description = "Validates admin credentials and redirects to the services dashboard")
-	public String getAllData(@ModelAttribute("adminLogin") AdminLogin login, Model model, jakarta.servlet.http.HttpSession session) {
+	public String getAllData(@ModelAttribute("adminLogin") AdminLogin login, Model model, jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpSession session) {
 		String email = login.getEmail();
 		String password = login.getPassword();
 		if (adminServices.validateAdminCredentials(email, password)) {
 			session.setAttribute("loggedInAdmin", email);
+			authenticateSession(request, session, email, "ROLE_ADMIN");
 			return "redirect:/admin/services";
 		} else {
 			model.addAttribute("error", "Invalid email or password");
@@ -53,12 +56,13 @@ public class AdminController {
 
 	@PostMapping("/userLogin")
 	@Operation(summary = "User login authentication", description = "Validates user credentials and redirects to the dashboard")
-	public String userLogin(@ModelAttribute("userLogin") UserLogin login, Model model, jakarta.servlet.http.HttpSession session) {
+	public String userLogin(@ModelAttribute("userLogin") UserLogin login, Model model, jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpSession session) {
 		String email = login.getUserEmail();
 		String password = login.getUserPassword();
 		if (services.validateLoginCredentials(email, password)) {
 			User loggedInUser = this.services.getUserByEmail(email);
 			session.setAttribute("loggedInUser", loggedInUser);
+			authenticateSession(request, session, email, "ROLE_USER");
 			return "redirect:/dashboard";
 		} else {
 			model.addAttribute("error2", "Invalid email or password");
@@ -82,8 +86,23 @@ public class AdminController {
 	@GetMapping("/logout")
 	@Operation(summary = "Logout", description = "Invalidates the session and redirects to home")
 	public String logout(jakarta.servlet.http.HttpSession session) {
+		SecurityContextHolder.clearContext();
 		session.invalidate();
 		return "redirect:/home";
+	}
+
+	private void authenticateSession(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpSession session, String principal, String role) {
+		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+				principal,
+				null,
+				List.of(new SimpleGrantedAuthority(role))
+		);
+		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		context.setAuthentication(authentication);
+		SecurityContextHolder.setContext(context);
+		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
 	}
 	@PostMapping("/product/search")
 	@Operation(summary = "Search for a product", description = "Finds a specific food item by name and returns its details")

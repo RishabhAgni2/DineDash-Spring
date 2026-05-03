@@ -1,0 +1,29 @@
+services:
+  - type: web
+    runtime: docker
+    name: food-fiesta
+    plan: free
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: food-fiesta-db
+          property: connectionString
+      - key: DB_NAME
+        fromDatabase:
+          name: food-fiesta-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: food-fiesta-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: food-fiesta-db
+          property: password
+
+databases:
+  - name: food-fiesta-db
+    plan: free
+    databaseName: foodfiesta

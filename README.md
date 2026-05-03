@@ -277,6 +277,63 @@ docker compose logs -f app
 
 ---
 
+## Render Deployment
+
+This repository includes a `render.yaml` Blueprint that creates:
+
+- A Docker web service named `food-fiesta`
+- A Render Postgres database named `food-fiesta-db`
+- Production database environment variables for Spring Boot
+
+Deploy steps:
+
+1. Push this repository to GitHub.
+2. In Render, choose **New > Blueprint**.
+3. Connect this repository and deploy the Blueprint.
+4. Render will build the Docker image and start the app with `SPRING_PROFILES_ACTIVE=prod`.
+
+Render production config uses these environment variables:
+
+| Key | Required | Notes |
+| :--- | :--- | :--- |
+| `SPRING_PROFILES_ACTIVE` | Yes | Set to `prod` by `render.yaml` |
+| `DATABASE_URL` | Yes | Filled from Render Postgres; the container converts it for Spring |
+| `DB_NAME` | Yes | Filled from Render Postgres |
+| `DB_USER` | Yes | Filled from Render Postgres |
+| `DB_PASSWORD` | Yes | Filled from Render Postgres |
+| `PORT` | Yes | Render provides this automatically |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` | Optional | Only needed for Google login |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET` | Optional | Only needed for Google login |
+
+If you enable Google login on Render, add this redirect URI in Google Cloud:
+
+```text
+https://YOUR_RENDER_SERVICE_NAME.onrender.com/login/oauth2/code/google
+```
+
+Local checks:
+
+```powershell
+.\mvnw.cmd test
+.\mvnw.cmd spring-boot:run
+```
+
+Then open:
+
+- App: [http://localhost:8080/](http://localhost:8080/)
+- Swagger: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- H2 Console: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+Production-style local run with Docker and PostgreSQL:
+
+```powershell
+docker compose up --build
+```
+
+Then open [http://localhost:8080/](http://localhost:8080/).
+
+---
+
 ## Build
 
 ```bash

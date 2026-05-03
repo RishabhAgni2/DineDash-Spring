@@ -25,22 +25,15 @@ WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-# Copy the jar and entrypoint script from the build stage
+# Copy the jar and startup script from the build stage
 COPY --from=build /app/target/*.jar app.jar
 COPY entrypoint.sh .
 
-# Grant execute permission for the script
 USER root
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 USER spring:spring
 
 # Expose the application port
 EXPOSE 8080
 
-# Configure environment variables for PostgreSQL (can be overridden at runtime)
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/foodfiesta
-ENV SPRING_DATASOURCE_USERNAME=postgres
-ENV SPRING_DATASOURCE_PASSWORD=password
-
-# Execution script
 ENTRYPOINT ["./entrypoint.sh"]

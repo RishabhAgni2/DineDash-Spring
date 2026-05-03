@@ -4,3 +4,6 @@ src/main/resources/static/**/* linguist-detectable=false
 
 # Explicitly mark Java as the primary language
 *.java linguist-detectable=true
+
+# Keep shell scripts executable inside Linux containers
+*.sh text eol=lf
